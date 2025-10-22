@@ -1,24 +1,45 @@
-# Broken Link Detector
+Broken Link Detector — README
 
-Scan your site for **internal broken links** using your XML sitemap and save results to a CSV for easy fixing over time.
+Crawls your sitemap, extracts internal links, checks them with HTTP HEAD, and appends results to a CSV so you can resume later.
 
----
+Requirements
 
-## Requirements
+Python 3.8+ · requests · beautifulsoup4
 
-- Python 3.8+
-- Libraries: [`requests`](https://pypi.org/project/requests/), [`beautifulsoup4`](https://pypi.org/project/beautifulsoup4/)
+Configure
 
-Install:
-```bash
-pip install requests beautifulsoup4
+Edit the constants at the top of the script:
 
-## Configure
+Variable	Default	Purpose
+BASE_DOMAIN	florisera.com	Treat links ending with this domain as internal.
+SITEMAP_URL	https://florisera.com/post-sitemap.xml
+How it works (brief)
 
-Edit the constants at the top of `brokenlinkdetector.py`:
+Fetch sitemap and parse all <loc> URLs.
 
-```python
-BASE_DOMAIN = "florisera.com"
-SITEMAP_URL = "https://florisera.com/post-sitemap.xml"
-MAX_URLS = 110  # pages checked per run
-REPORT_CSV = "broken_links_report.csv"
+Skip pages already present in REPORT_CSV.
+
+For each new page: fetch HTML → collect internal <a href> → HEAD each link.
+
+Record broken ones (status ≥ 400). If none, write a “checked” row.
+
+Run
+
+From your terminal in the script’s folder:
+python brokenlinkdetector.py
+
+Output (CSV)
+
+Columns: page_url, broken_link, status
+
+status is an HTTP code or “checked” (no broken links on that page).
+
+Delete REPORT_CSV to rescan everything from scratch.
+
+Notes
+
+Internal only (external links are ignored).
+
+Some sites don’t support HEAD; you may add a GET fallback if needed.
+
+Increase MAX_URLS to process more pages per run.
